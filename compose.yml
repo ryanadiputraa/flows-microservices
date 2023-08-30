@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   gateway:
-    container_name: api-gateway
+    container_name: flows/api-gateway
     build: ./api-gateway
     ports:
       - 8080:8080

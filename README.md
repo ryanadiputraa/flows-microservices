@@ -6,10 +6,11 @@ Backend microservices for Flows application
 
 ## Tech Stacks
 
-- Go 1.21
-- Postgres 15.4-alpine
-- NodeJS 18.17.1
-- MongoDB 7.0
+- Go
+- Postgres
+- NodeJS
+- ExpressJS
+- MongoDB
 
 ---
 
