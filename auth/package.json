@@ -1,5 +1,5 @@
 {
-  "name": "flows-api-gateway",
+  "name": "flows-auth",
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
