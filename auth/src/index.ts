@@ -1,4 +1,9 @@
-import { serveHttp } from './server/server';
-import { logger } from './server/logger';
+import dotenv from 'dotenv';
 
-serveHttp(() => logger.info('http server running...'));
+import Server from './server/server';
+import WinstonLogger from './server/logger';
+
+const logger = new WinstonLogger();
+
+const server = new Server(dotenv.config, logger);
+server.run();

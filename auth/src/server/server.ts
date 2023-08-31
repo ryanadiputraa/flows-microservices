@@ -1,12 +1,25 @@
 import express, { Application } from 'express';
-import dotenv from 'dotenv';
 
-dotenv.config();
-const port: Number = Number(process.env.PORT) || 8080;
+import { Logger } from './logger';
 
-const server: Application = express();
-server.use(express.json());
+class Server {
+	private server: Application;
+	private logger: Logger;
 
-export const serveHttp = (callback: () => void) => {
-	server.listen(port, callback);
-};
+	constructor(config: () => any, logger: Logger) {
+		config();
+		this.server = express();
+		this.logger = logger;
+
+		this.server.use(express.json());
+	}
+
+	run() {
+		const port: Number = Number(process.env.PORT) || 8080;
+		this.server.listen(port, () => {
+			this.logger.info(`http server running on port: ${port}`);
+		});
+	}
+}
+
+export default Server;
