@@ -1,10 +1,10 @@
 CREATE TABLE users (
   id varchar(100) PRIMARY KEY,
+  email varchar(100) UNIQUE NOT NULL,
+  password varchar(100) NOT NULL,
   first_name varchar(100) NOT NULL,
   last_name varchar(100) NOT NULL,
-  email varchar(100) UNIQUE NOT NULL,
-  picture varchar(200),
   currency varchar(20) NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT NOW(),
-  is_verified boolean NOT NULL
+  picture varchar(200),
+  created_at timestamptz NOT NULL DEFAULT NOW()
 );
