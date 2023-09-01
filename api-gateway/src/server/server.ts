@@ -1,12 +1,32 @@
 import express, { Application } from 'express';
-import dotenv from 'dotenv';
 
-dotenv.config();
-const port: Number = Number(process.env.PORT) || 8080;
+import { Logger } from './logger';
+import PublicRouter from '../routes/public-api';
+import { Config } from '../types/config';
+import { errorMiddleware } from '../middleware/error-middleware';
 
-const server: Application = express();
-server.use(express.json());
+class Server {
+	private config: Config;
+	private server: Application;
+	private logger: Logger;
 
-export const serveHttp = (callback: () => void) => {
-	server.listen(port, callback);
-};
+	constructor(config: Config, logger: Logger) {
+		this.config = config;
+		this.server = express();
+		this.logger = logger;
+
+		this.server.use(express.json());
+
+		const publicRouter = new PublicRouter(this.config, logger);
+		this.server.use(publicRouter.router);
+		this.server.use(errorMiddleware);
+	}
+
+	run() {
+		this.server.listen(this.config.port, () => {
+			this.logger.info(`http server running on port: ${this.config.port}`);
+		});
+	}
+}
+
+export default Server;

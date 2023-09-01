@@ -1,4 +1,17 @@
-import { serveHttp } from './server/server';
-import { logger } from './server/logger';
+import dotenv from 'dotenv';
 
-serveHttp(() => logger.info('http server running...'));
+import Server from './server/server';
+import WinstonLogger from './server/logger';
+
+dotenv.config();
+
+const config = {
+	port: Number(process.env.PORT) || 8080,
+	jwtSecret: process.env.JWT_SECRET,
+	jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
+};
+
+const logger = new WinstonLogger();
+
+const server = new Server(config, logger);
+server.run();
