@@ -20,3 +20,21 @@ User Service for Spendify Microservice
 ```bash
 go run cmd/api.go
 ```
+
+- To crete database migration you need to install [migrate](https://github.com/golang-migrate/migrate) on your local machine
+
+```bash
+migrate create -ext sql -dir pkg/db/migration -seq <migration_name>
+```
+
+- Then run migration:
+
+```bash
+migrate -path pkg/db/migration -database "postgresql://postgres:postgres@localhost:5432/flows_users?sslmode=disable" -verbose up
+```
+
+- Rollback using:
+
+```bash
+migrate -path pkg/db/migration -database "postgresql://postgres:postgres@localhost:5432/flows_users?sslmode=disable" -verbose down
+```

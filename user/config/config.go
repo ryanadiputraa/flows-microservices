@@ -4,10 +4,15 @@ import "github.com/spf13/viper"
 
 type Config struct {
 	Server *Server
+	DB     *DB
 }
 
 type Server struct {
 	Port string
+}
+type DB struct {
+	Driver string
+	DSN    string
 }
 
 func LoadConfig(configPath string) (*Config, error) {

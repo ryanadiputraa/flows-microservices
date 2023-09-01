@@ -10,6 +10,7 @@ type Logger interface {
 	Info(v ...any)
 	Warn(v ...any)
 	Error(v ...any)
+	Fatal(v ...any)
 }
 
 type logger struct {
@@ -38,4 +39,9 @@ func (l *logger) Warn(v ...any) {
 
 func (l *logger) Error(v ...any) {
 	l.log.Error(v...)
+	l.log.Fatal()
+}
+
+func (l *logger) Fatal(v ...any) {
+	l.log.Fatal(v...)
 }
