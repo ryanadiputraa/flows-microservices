@@ -1,0 +1,5 @@
+server:
+  port: ':8080'
+db:
+  driver: postgres
+  dsn: postgresql://postgres:postgres@user_db:5432/flows_users?sslmode=disable

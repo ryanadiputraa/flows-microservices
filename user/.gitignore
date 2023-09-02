@@ -1,0 +1,7 @@
+# dev & credentials
+config/config.yml
+
+# build
+main
+
+.DS_Store
