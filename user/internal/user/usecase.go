@@ -7,5 +7,5 @@ import (
 )
 
 type Usecase interface {
-	Register(ctx context.Context, user *domain.User) (*domain.User, error)
+	Register(ctx context.Context, user *domain.UserDTO) (*domain.User, error)
 }

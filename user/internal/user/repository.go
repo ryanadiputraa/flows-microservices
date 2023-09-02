@@ -7,5 +7,5 @@ import (
 )
 
 type Repository interface {
-	Save(ctx context.Context, user *domain.User) (*domain.User, error)
+	Save(ctx context.Context, user *domain.User) error
 }

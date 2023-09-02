@@ -18,17 +18,26 @@ const (
 )
 
 type User struct {
-	ID        string    `json:"id" db:"id"`
-	Email     string    `json:"email" db:"email"`
-	Password  string    `json:"-" db:"password"`
-	FirstName string    `json:"first_name" db:"first_name"`
-	LastName  string    `json:"last_name" db:"last_name"`
-	Currency  Currency  `json:"currency" db:"currency"`
-	Picture   string    `json:"picture" db:"picture"`
+	ID        string    `json:"id" db:"id" validate:"required,max=100"`
+	Email     string    `json:"email" db:"email" validate:"required,email,max=100"`
+	Password  string    `json:"-" db:"password" validate:"required,max=100"`
+	FirstName string    `json:"first_name" db:"first_name" validate:"required,max=100"`
+	LastName  string    `json:"last_name" db:"last_name" validate:"required,max=100"`
+	Currency  Currency  `json:"currency" db:"currency" validate:"required,max=20"`
+	Picture   string    `json:"picture" db:"picture" validate:"url_encoded"`
 	CreatedAt time.Time `json:"-" db:"created_at"`
 }
 
-func NewUser(id, firstName, lastName, email, picture, password string, currency Currency, verified bool) (*User, error) {
+type UserDTO struct {
+	Email     string   `json:"email" db:"email" validate:"required,email,max=100"`
+	Password  string   `json:"password" db:"password" validate:"required,min=8"`
+	FirstName string   `json:"first_name" db:"first_name" validate:"required,max=100"`
+	LastName  string   `json:"last_name" db:"last_name" validate:"required,max=100"`
+	Currency  Currency `json:"currency" db:"currency" validate:"required,max=20"`
+	Picture   string   `json:"picture" db:"picture" validate:"http_url"`
+}
+
+func NewUser(id, firstName, lastName, email, picture, password string, currency Currency) (*User, error) {
 	if !IsValidCurrency(currency) {
 		return &User{}, errors.New("invalid currency")
 	}
@@ -50,7 +59,7 @@ func IsValidCurrency(currency Currency) bool {
 }
 
 func (u *User) HashPassowrd() error {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(u.Password), 10)
 	if err != nil {
 		return err
 	}

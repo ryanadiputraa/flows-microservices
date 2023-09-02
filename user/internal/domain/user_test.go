@@ -34,10 +34,9 @@ func TestNewUser(t *testing.T) {
 			lastName := gofakeit.LastName()
 			email := gofakeit.Email()
 			picture := gofakeit.ImageURL(120, 120)
-			verified := true
 			password := gofakeit.Password(true, true, true, true, false, 20)
 
-			user, err := NewUser(id, firstName, lastName, email, picture, password, c.currency, verified)
+			user, err := NewUser(id, firstName, lastName, email, picture, password, c.currency)
 
 			assert.Equal(t, c.err, err)
 			if err != nil {
@@ -73,10 +72,9 @@ func TestPasswordHash(t *testing.T) {
 			email := gofakeit.Email()
 			picture := gofakeit.ImageURL(120, 120)
 			currency := IDR
-			verified := true
 			password := gofakeit.Password(true, true, true, true, false, 20)
 
-			user, err := NewUser(id, firstName, lastName, email, picture, password, currency, verified)
+			user, err := NewUser(id, firstName, lastName, email, picture, password, currency)
 			user.HashPassowrd()
 			assert.NoError(t, err)
 

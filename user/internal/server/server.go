@@ -27,6 +27,8 @@ func NewServer(config *config.Config, logger logger.Logger, db *sqlx.DB) *Server
 func (s *Server) Run() error {
 	s.Logger.Info("http server running on port", s.Config.Server.Port)
 
+	s.MapHandlers()
+
 	server := &http.Server{
 		Addr:    s.Config.Server.Port,
 		Handler: s.Handler,
