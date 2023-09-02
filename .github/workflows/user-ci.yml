@@ -23,5 +23,5 @@ jobs:
 
       - name: Run test cases
         run: |
-          cd users
+          cd user
           go test ./... -v -cover
