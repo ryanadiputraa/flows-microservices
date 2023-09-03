@@ -3,24 +3,22 @@ package repository
 import (
 	"context"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/domain"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/user"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type repository struct {
-	db *sqlx.DB
+	db     *mongo.Client
+	dbName string
 }
 
-func NewRepository(db *sqlx.DB) user.Repository {
-	return &repository{db: db}
+func NewRepository(db *mongo.Client, dbName string) user.Repository {
+	return &repository{db: db, dbName: dbName}
 }
 
 func (r *repository) Save(ctx context.Context, user *domain.User) error {
-	q := `INSERT INTO users (id, email, password, first_name, last_name, currency, picture, created_at)
-	VALUES (:id, :email, :password, :first_name, :last_name, :currency, :picture, :created_at)`
-
-	_, err := r.db.NamedExecContext(ctx, q, user)
-
+	c := r.db.Database(r.dbName).Collection("users")
+	_, err := c.InsertOne(ctx, user)
 	return err
 }

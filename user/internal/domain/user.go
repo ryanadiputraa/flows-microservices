@@ -18,23 +18,23 @@ const (
 )
 
 type User struct {
-	ID        string    `json:"id" db:"id" validate:"required,max=100"`
-	Email     string    `json:"email" db:"email" validate:"required,email,max=100"`
-	Password  string    `json:"-" db:"password" validate:"required,max=100"`
-	FirstName string    `json:"first_name" db:"first_name" validate:"required,max=100"`
-	LastName  string    `json:"last_name" db:"last_name" validate:"required,max=100"`
-	Currency  Currency  `json:"currency" db:"currency" validate:"required,max=20"`
-	Picture   string    `json:"picture" db:"picture" validate:"url_encoded"`
-	CreatedAt time.Time `json:"-" db:"created_at"`
+	ID        string    `json:"id" bson:"_id" validate:"required,max=100"`
+	Email     string    `json:"email" bson:"email" validate:"required,email,max=100"`
+	Password  string    `json:"-" bson:"password" validate:"required,max=100"`
+	FirstName string    `json:"first_name" bson:"first_name" validate:"required,max=100"`
+	LastName  string    `json:"last_name" bson:"last_name" validate:"required,max=100"`
+	Currency  Currency  `json:"currency" bson:"currency" validate:"required,max=20"`
+	Picture   string    `json:"picture" bson:"picture" validate:"url_encoded"`
+	CreatedAt time.Time `json:"-" bson:"created_at"`
 }
 
 type UserDTO struct {
-	Email     string   `json:"email" db:"email" validate:"required,email,max=100"`
-	Password  string   `json:"password" db:"password" validate:"required,min=8"`
-	FirstName string   `json:"first_name" db:"first_name" validate:"required,max=100"`
-	LastName  string   `json:"last_name" db:"last_name" validate:"required,max=100"`
-	Currency  Currency `json:"currency" db:"currency" validate:"required,max=20"`
-	Picture   string   `json:"picture" db:"picture" validate:"http_url"`
+	Email     string   `json:"email" bson:"email" validate:"required,email,max=100"`
+	Password  string   `json:"password" bson:"password" validate:"required,min=8"`
+	FirstName string   `json:"first_name" bson:"first_name" validate:"required,max=100"`
+	LastName  string   `json:"last_name" bson:"last_name" validate:"required,max=100"`
+	Currency  Currency `json:"currency" bson:"currency" validate:"required,max=20"`
+	Picture   string   `json:"picture" bson:"picture" validate:"http_url"`
 }
 
 func NewUser(id, firstName, lastName, email, picture, password string, currency Currency) (*User, error) {

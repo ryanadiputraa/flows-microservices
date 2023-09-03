@@ -1,29 +1,37 @@
 package db
 
 import (
-	"github.com/jmoiron/sqlx"
+	"context"
+
 	"github.com/ryanadiputraa/flows/flows-microservices/user/config"
-
-	_ "github.com/lib/pq"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-const (
-	maxOpenConns    = 60
-	connMaxLifeTime = 120
-	maxIdleConns    = 30
-	connMaxIdleTime = 20
-)
-
-func NewDB(config config.DB) (*sqlx.DB, error) {
-	db, err := sqlx.Connect(config.Driver, config.DSN)
+func NewDB(config config.DB) (*mongo.Client, error) {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(config.DSN))
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(maxOpenConns)
-	db.SetConnMaxLifetime(connMaxLifeTime)
-	db.SetMaxIdleConns(maxIdleConns)
-	db.SetConnMaxIdleTime(connMaxIdleTime)
+	if err = client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		return nil, err
+	}
 
-	return db, err
+	uniqueUserEmailIndexModel(client, config.DB_Name)
+
+	return client, nil
+}
+
+func uniqueUserEmailIndexModel(client *mongo.Client, db string) error {
+	c := client.Database(db).Collection("users")
+	indexModel := mongo.IndexModel{
+		Keys:    bson.M{"email": 1},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := c.Indexes().CreateOne(context.TODO(), indexModel)
+	return err
 }
