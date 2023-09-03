@@ -32,8 +32,10 @@ func (s *Server) Run() error {
 	s.MapHandlers()
 
 	server := &http.Server{
-		Addr:    s.Config.Server.Port,
-		Handler: s.Handler,
+		Addr:         s.Config.Server.Port,
+		Handler:      s.Handler,
+		ReadTimeout:  time.Second * 15,
+		WriteTimeout: time.Second * 15,
 	}
 
 	go func() {
