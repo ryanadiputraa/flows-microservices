@@ -7,19 +7,19 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/config"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/logger"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Server struct {
 	Config  *config.Config
 	Handler *http.ServeMux
 	Logger  logger.Logger
-	DB      *sqlx.DB
+	DB      *mongo.Client
 }
 
-func NewServer(config *config.Config, logger logger.Logger, db *sqlx.DB) *Server {
+func NewServer(config *config.Config, logger logger.Logger, db *mongo.Client) *Server {
 	return &Server{
 		Config:  config,
 		Handler: http.NewServeMux(),

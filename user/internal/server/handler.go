@@ -10,7 +10,7 @@ import (
 func (s *Server) MapHandlers() {
 	validator := validator.NewValidator()
 
-	userRepository := repository.NewRepository(s.DB)
+	userRepository := repository.NewRepository(s.DB, s.Config.DB.DB_Name)
 	userService := service.NewService(*s.Config, validator, s.Logger, userRepository)
 	controller.NewController(s.Handler, userService)
 }
