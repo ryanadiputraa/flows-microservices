@@ -10,7 +10,7 @@ const info = {
 		contact: {
 			name: 'Ryan Adi Putra',
 			email: 'ryannadiputraa@gmail.com',
-			url: 'ryanadiputra.vercel.app',
+			url: 'http://ryanadiputra.vercel.app',
 		},
 	},
 };
