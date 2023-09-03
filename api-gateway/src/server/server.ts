@@ -1,9 +1,12 @@
 import express, { Application } from 'express';
+import cors from 'cors';
+import swaggerUI from 'swagger-ui-express';
 
 import { Logger } from './logger';
 import PublicRouter from '../routes/public-api';
 import { Config } from '../types/config';
 import { errorMiddleware } from '../middleware/error-middleware';
+import docs from '../docs';
 
 class Server {
 	private config: Config;
@@ -16,6 +19,8 @@ class Server {
 		this.logger = logger;
 
 		this.server.use(express.json());
+		this.server.use(cors());
+		this.server.use('/docs', swaggerUI.serve, swaggerUI.setup(docs));
 
 		const publicRouter = new PublicRouter(this.config, logger);
 		this.server.use(publicRouter.router);
