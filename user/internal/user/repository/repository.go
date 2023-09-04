@@ -24,6 +24,16 @@ func (r *repository) Save(ctx context.Context, user *domain.User) error {
 	return err
 }
 
+func (r *repository) FindByID(ctx context.Context, id string) (*domain.User, error) {
+	var user *domain.User
+	c := r.db.Database(r.dbName).Collection("users")
+
+	if err := c.FindOne(ctx, bson.M{"_id": id}).Decode(&user); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (r *repository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user *domain.User
 	c := r.db.Database(r.dbName).Collection("users")

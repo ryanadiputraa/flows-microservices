@@ -14,6 +14,8 @@ import (
 
 type JWTService interface {
 	GenerateJWTTokens(ctx context.Context, userID string) (*domain.JWTTokens, error)
+	ParseJWTClaims(ctx context.Context, token string) (*domain.JWTClaims, error)
+	ExtractJWTTokenHeader(header http.Header) (string, error)
 }
 
 type service struct {
@@ -64,6 +66,40 @@ func (s *service) GenerateJWTTokens(ctx context.Context, userID string) (*domain
 	if err = json.Unmarshal(respBody, &serviceResp); err != nil {
 		s.log.Error("parse auth service resp: ", err)
 		return nil, err
+	}
+
+	return &serviceResp.Data, nil
+}
+
+func (s *service) ParseJWTClaims(ctx context.Context, token string) (*domain.JWTClaims, error) {
+	url := s.baseURL + "/api/claims?token=" + token
+	resp, err := http.Get(url)
+	if err != nil {
+		s.log.Error("call auth service: ", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		s.log.Error("read auth service resp: ", err)
+		return nil, err
+	}
+
+	var serviceResp domain.ServiveResponse[domain.JWTClaims]
+	if err := json.Unmarshal(respBody, &serviceResp); err != nil {
+		s.log.Error("parse auth service resp: ", err)
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		s.log.Warn("auth service resp: ", resp.StatusCode)
+		return nil, &domain.ResponseError{
+			Code:    resp.StatusCode,
+			Message: serviceResp.Message,
+			ErrCode: "invalid_params",
+			Errors:  serviceResp.Errors,
+		}
 	}
 
 	return &serviceResp.Data, nil

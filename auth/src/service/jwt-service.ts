@@ -51,8 +51,8 @@ class JWTService {
 			};
 		} catch (error) {
 			if (JsonWebTokenError) {
-				this.log.warn('invalid parse claims params: ' + error);
-				throw new ResponseError(400, 'invalid_params', 'invalid parse claims params');
+				this.log.warn('invalid jwt token claims: ' + error);
+				throw new ResponseError(400, 'forbidden', 'invalid jwt token');
 			} else {
 				this.log.error(error);
 			}

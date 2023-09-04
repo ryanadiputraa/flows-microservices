@@ -13,6 +13,7 @@ class PublicRouter {
 
 		this.router.post('/auth/register', userService.register);
 		this.router.post('/auth/login', userService.login);
+		this.router.get('/api/users', userService.userInfo);
 	}
 }
 

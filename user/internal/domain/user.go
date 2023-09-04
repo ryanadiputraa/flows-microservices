@@ -43,6 +43,10 @@ type JWTTokens struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type JWTClaims struct {
+	UserID string `json:"user_id"`
+}
+
 type LoginDTO struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`

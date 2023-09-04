@@ -116,3 +116,13 @@ func (s *service) Login(ctx context.Context, dto *domain.LoginDTO) (*domain.User
 
 	return user, nil
 }
+
+func (s *service) GetUserInfo(ctx context.Context, userID string) (*domain.User, error) {
+	user, err := s.repository.FindByID(ctx, userID)
+	if err != nil {
+		s.log.Error("user info: ", err)
+		return nil, err
+	}
+
+	return user, nil
+}

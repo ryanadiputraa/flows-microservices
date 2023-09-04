@@ -41,6 +41,25 @@ class UserSerive {
 			res.status(status).json(resp);
 		}
 	};
+
+	userInfo = async (req: Request, res: Response) => {
+		try {
+			const resp = await axios.get(`${this.baseURL}/api/users`, {
+				headers: {
+					Authorization: req.headers.authorization,
+				},
+			});
+			return res.status(resp.status).json(resp.data);
+		} catch (error) {
+			const { status, resp } = catchServiceErr(error);
+			if (status >= 500 && status < 600) {
+				this.logger.error(error);
+			} else {
+				this.logger.warn(error);
+			}
+			res.status(status).json(resp);
+		}
+	};
 }
 
 export default UserSerive;
