@@ -4,6 +4,6 @@ export interface JWTTokens {
 	refresh_token: string;
 }
 
-export interface GenerateJWTTokensDTO {
+export interface JWTClaimsDTO {
 	user_id: string;
 }

@@ -1,11 +1,12 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JsonWebTokenError } from 'jsonwebtoken';
 import { ValidationError } from 'joi';
 
-import { GenerateJWTTokensDTO, JWTTokens } from '../model/jwt';
+import { JWTClaimsDTO, JWTTokens } from '../model/jwt';
 import { Logger } from '../server/logger';
 import { generateJWTTokensValidation } from '../validation/jwt';
 import { validateRequest } from '../validation/validation';
 import { Config } from '../types/config';
+import { ResponseError } from '../types/http-response';
 
 class JWTService {
 	private log: Logger;
@@ -18,9 +19,9 @@ class JWTService {
 		this.refreshSecret = config.jwtRefreshSecret;
 	}
 
-	generateJWTTokens = async (dto: GenerateJWTTokensDTO): Promise<JWTTokens> => {
+	generateJWTTokens = async (dto: JWTClaimsDTO): Promise<JWTTokens> => {
 		try {
-			const claims = validateRequest<GenerateJWTTokensDTO>(generateJWTTokensValidation, dto);
+			const claims = validateRequest<JWTClaimsDTO>(generateJWTTokensValidation, dto);
 			const access_token = jwt.sign(claims, this.secret, { expiresIn: '1h' });
 			const refresh_token = jwt.sign(claims, this.refreshSecret, { expiresIn: '720h' });
 			const expires_in = Math.floor(Date.now() / 1000) + 3600;
@@ -33,6 +34,25 @@ class JWTService {
 		} catch (error) {
 			if (error instanceof ValidationError) {
 				this.log.warn('generate access token: ' + error.message);
+			} else {
+				this.log.error(error);
+			}
+			throw error;
+		}
+	};
+
+	ParseJWTClaims = async (token: string): Promise<JWTClaimsDTO> => {
+		try {
+			const decoded = jwt.verify(token, this.secret);
+			const user_id = decoded['user_id'] ?? '';
+			if (!user_id) this.log.warn('empty user id on jwt claims: ' + decoded);
+			return {
+				user_id,
+			};
+		} catch (error) {
+			if (JsonWebTokenError) {
+				this.log.warn('invalid parse claims params: ' + error);
+				throw new ResponseError(400, 'invalid_params', 'invalid parse claims params');
 			} else {
 				this.log.error(error);
 			}
