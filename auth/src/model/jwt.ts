@@ -1,7 +1,7 @@
 export interface JWTTokens {
-	accessToken: string;
-	expiresIn: number;
-	refreshToken: string;
+	access_token: string;
+	expires_in: number;
+	refresh_token: string;
 }
 
 export interface GenerateJWTTokensDTO {

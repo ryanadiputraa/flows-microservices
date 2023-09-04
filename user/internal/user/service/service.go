@@ -11,6 +11,7 @@ import (
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/logger"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/response"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/validator"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type service struct {
@@ -64,8 +65,8 @@ func (s *service) Register(ctx context.Context, dto *domain.UserDTO) (*domain.Us
 	}
 
 	if err := s.repository.Save(ctx, user); err != nil {
-		s.log.Warn("register user: ", err)
 		if domain.IsDuplicateSQLError(err) {
+			s.log.Warn("register user: ", err)
 			return nil, &domain.ResponseError{
 				Code:    http.StatusBadRequest,
 				Message: "fail to register user",
@@ -75,9 +76,43 @@ func (s *service) Register(ctx context.Context, dto *domain.UserDTO) (*domain.Us
 				},
 			}
 		}
+		s.log.Error("register user: ", err)
 		return nil, err
 	}
 	s.log.Info("new user registered: ", user.ID)
+
+	return user, nil
+}
+
+func (s *service) Login(ctx context.Context, dto *domain.LoginDTO) (*domain.User, error) {
+	user, err := s.repository.FindByEmail(ctx, dto.Email)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			s.log.Warn("login user: ", err)
+			return nil, &domain.ResponseError{
+				Code:    http.StatusBadRequest,
+				Message: "fail to sign in user",
+				ErrCode: response.INVALID_PARAMS,
+				Errors: map[string][]string{
+					"email": {"no user found with given email"},
+				},
+			}
+		}
+		s.log.Error("login user: ", err)
+		return nil, err
+	}
+
+	if err := user.CompareHashedPassword(dto.Password); err != nil {
+		s.log.Warn("login user: ", err)
+		return nil, &domain.ResponseError{
+			Code:    http.StatusBadRequest,
+			Message: "fail to sign in user",
+			ErrCode: response.INVALID_PARAMS,
+			Errors: map[string][]string{
+				"password": {"password didn't match"},
+			},
+		}
+	}
 
 	return user, nil
 }

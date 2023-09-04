@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/google/uuid"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/config"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/domain"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/mocks"
@@ -17,6 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var (
@@ -52,7 +52,7 @@ func TestRegister(t *testing.T) {
 	}
 
 	user, _ := domain.NewUser(
-		uuid.NewString(), dto.FirstName, dto.LastName, dto.Email,
+		gofakeit.UUID(), dto.FirstName, dto.LastName, dto.Email,
 		dto.Picture, dto.Password, dto.Currency)
 	user.HashPassowrd()
 
@@ -160,114 +160,99 @@ func TestRegister(t *testing.T) {
 	}
 }
 
-// func TestGetUserInfo(t *testing.T) {
-// 	assert := assert.New(t)
+func TestLogin(t *testing.T) {
+	user, _ := domain.NewUser(
+		gofakeit.UUID(), gofakeit.FirstName(), gofakeit.LastName(),
+		"test@mail.com", gofakeit.ImageURL(80, 80),
+		"testpassword", "IDR")
+	user.HashPassowrd()
 
-// 	uid1 := uuid.NewString()
-// 	user1, _ := domain.NewUser(
-// 		uid1, gofakeit.FirstName(), gofakeit.LastName(), gofakeit.Email(),
-// 		gofakeit.ImageURL(120, 120), gofakeit.Password(true, true, true, true, false, 20), domain.IDR, true)
+	cases := []struct {
+		name     string
+		dto      *domain.LoginDTO
+		expected *domain.User
+		err      error
+		mockRepo func(mockRepo *mocks.Repository)
+	}{
+		{
+			name: "should successfully return logged in user",
+			dto: &domain.LoginDTO{
+				Email:    user.Email,
+				Password: "testpassword",
+			},
+			expected: user,
+			err:      nil,
+			mockRepo: func(mockRepo *mocks.Repository) {
+				mockRepo.On("FindByEmail", mock.Anything, user.Email).Return(user, nil)
+			},
+		},
+		{
+			name: "should fail when user with given email didn't exists",
+			dto: &domain.LoginDTO{
+				Email:    "rand@mail.com",
+				Password: "testpassword",
+			},
+			expected: nil,
+			err: &domain.ResponseError{
+				Code:    http.StatusBadRequest,
+				Message: "fail to sign in user",
+				ErrCode: response.INVALID_PARAMS,
+				Errors: map[string][]string{
+					"email": {"no user found with given email"},
+				},
+			},
+			mockRepo: func(mockRepo *mocks.Repository) {
+				mockRepo.On("FindByEmail", mock.Anything, "rand@mail.com").Return(nil, mongo.ErrNoDocuments)
+			},
+		},
+		{
+			name: "should fail when repository fail to fetch",
+			dto: &domain.LoginDTO{
+				Email:    user.Email,
+				Password: "testpassword",
+			},
+			expected: nil,
+			err:      mongo.ErrClientDisconnected,
+			mockRepo: func(mockRepo *mocks.Repository) {
+				mockRepo.On("FindByEmail", mock.Anything, user.Email).Return(nil, mongo.ErrClientDisconnected)
+			},
+		},
+		{
+			name: "should fail when password didn't match",
+			dto: &domain.LoginDTO{
+				Email:    "rand@mail.com",
+				Password: "falsepassword",
+			},
+			expected: nil,
+			err: &domain.ResponseError{
+				Code:    http.StatusBadRequest,
+				Message: "fail to sign in user",
+				ErrCode: response.INVALID_PARAMS,
+				Errors: map[string][]string{
+					"password": {"password didn't match"},
+				},
+			},
+			mockRepo: func(mockRepo *mocks.Repository) {
+				mockRepo.On("FindByEmail", mock.Anything, "rand@mail.com").Return(user, nil)
+			},
+		},
+	}
 
-// 	uid2 := uuid.NewString()
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			r := new(mocks.Repository)
+			c.mockRepo(r)
+			s := NewService(testConfig, testValidator, testLog, r)
 
-// 	cases := []struct {
-// 		name     string
-// 		userID   string
-// 		expected *domain.User
-// 		err      error
-// 		mockRepo func(mockRepo *mocks.Repository)
-// 	}{
-// 		{
-// 			name:     "should return user with given id",
-// 			userID:   uid1,
-// 			expected: user1,
-// 			err:      nil,
-// 			mockRepo: func(mockRepo *mocks.Repository) {
-// 				mockRepo.On("FindByID", mock.Anything, uid1).Return(user1, nil)
-// 			},
-// 		},
-// 		{
-// 			name:     "should return empty user when given user id didn't exists",
-// 			userID:   uid2,
-// 			expected: &domain.User{},
-// 			err:      sql.ErrNoRows,
-// 			mockRepo: func(mockRepo *mocks.Repository) {
-// 				mockRepo.On("FindByID", mock.Anything, uid2).Return(&domain.User{}, sql.ErrNoRows)
-// 			},
-// 		},
-// 	}
+			d, err := s.Login(context.TODO(), c.dto)
+			if err != nil {
+				assert.Empty(t, d)
+				assert.Equal(t, c.err, err)
+				return
+			}
 
-// 	for _, c := range cases {
-// 		t.Run(c.name, func(t *testing.T) {
-// 			r := new(mocks.Repository)
-// 			c.mockRepo(r)
-// 			u := NewUseCase(r)
-
-// 			user, err := u.GetUserData(context.Background(), c.userID)
-// 			assert.Equal(c.err, err)
-// 			if err != nil {
-// 				assert.Empty(user)
-// 				return
-// 			}
-
-// 			assert.Equal(c.expected.ID, user.ID)
-// 			assert.Equal(c.expected.FirstName, user.FirstName)
-// 			assert.Equal(c.expected.LastName, user.LastName)
-// 			assert.Equal(c.expected.Email, user.Email)
-// 			assert.Equal(c.expected.Picture, user.Picture)
-// 			assert.Equal(c.expected.Currency, user.Currency)
-// 			assert.Equal(c.expected.VerifiedEmail, false)
-// 		})
-// 	}
-// }
-
-// func TestSignIn(t *testing.T) {
-// 	user, _ := domain.NewUser(
-// 		uuid.NewString(), gofakeit.FirstName(), gofakeit.LastName(), gofakeit.Email(),
-// 		gofakeit.ImageURL(120, 120), gofakeit.Password(true, true, true, true, false, 20), domain.IDR, true)
-
-// 	mockUser, _ := domain.NewUser(
-// 		user.ID, user.FirstName, user.LastName, user.Email, user.Picture,
-// 		user.Password, user.Currency, false)
-// 	mockUser.HashPassowrd()
-
-// 	cases := []struct {
-// 		name     string
-// 		user     *domain.User
-// 		err      error
-// 		mockRepo func(mockRepo *mocks.Repository)
-// 	}{
-// 		{
-// 			name: "should found user with given email",
-// 			user: user,
-// 			err:  nil,
-// 			mockRepo: func(mockRepo *mocks.Repository) {
-// 				mockRepo.On("FindByEmail", mock.Anything, mock.Anything).Return(mockUser, nil)
-// 			},
-// 		},
-// 		{
-// 			name: "should fail to retrieve user",
-// 			user: user,
-// 			err:  sql.ErrNoRows,
-// 			mockRepo: func(mockRepo *mocks.Repository) {
-// 				mockRepo.On("FindByEmail", mock.Anything, mock.Anything).Return(&domain.User{}, sql.ErrNoRows)
-// 			},
-// 		},
-// 	}
-
-// 	for _, c := range cases {
-// 		t.Run(c.name, func(t *testing.T) {
-// 			r := new(mocks.Repository)
-// 			c.mockRepo(r)
-// 			u := NewUseCase(r)
-
-// 			userID, err := u.SignIn(context.Background(), user.Email, user.Password)
-// 			assert.Equal(t, c.err, err)
-// 			if err != nil {
-// 				assert.Empty(t, userID)
-// 				return
-// 			}
-// 			assert.Equal(t, user.ID, userID)
-// 		})
-// 	}
-// }
+			assert.Empty(t, err)
+			assert.Equal(t, c.expected, d)
+		})
+	}
+}

@@ -8,4 +8,5 @@ import (
 
 type Usecase interface {
 	Register(ctx context.Context, user *domain.UserDTO) (*domain.User, error)
+	Login(ctx context.Context, dto *domain.LoginDTO) (*domain.User, error)
 }
