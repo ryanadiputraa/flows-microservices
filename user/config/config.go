@@ -11,9 +11,8 @@ type Server struct {
 	Port string
 }
 type DB struct {
-	Driver  string
-	DSN     string
 	DB_Name string
+	DSN     string
 }
 
 func LoadConfig(configPath string) (*Config, error) {

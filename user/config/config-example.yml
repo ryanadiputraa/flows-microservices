@@ -1,5 +1,5 @@
 server:
-  port: ':80'
+  port: :80
 db:
-  driver: postgres
-  dsn: postgresql://postgres:postgres@user_db:5432/flows_users?sslmode=disable
+  db_name: flows_users
+  dsn: mongodb://user_db:27017/flows_users
