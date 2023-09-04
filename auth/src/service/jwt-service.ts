@@ -21,14 +21,14 @@ class JWTService {
 	generateJWTTokens = async (dto: GenerateJWTTokensDTO): Promise<JWTTokens> => {
 		try {
 			const claims = validateRequest<GenerateJWTTokensDTO>(generateJWTTokensValidation, dto);
-			const accessToken = jwt.sign(claims, this.secret, { expiresIn: '1h' });
-			const refreshToken = jwt.sign(claims, this.refreshSecret, { expiresIn: '720h' });
-			const expiresIn = Math.floor(Date.now() / 1000) + 3600;
+			const access_token = jwt.sign(claims, this.secret, { expiresIn: '1h' });
+			const refresh_token = jwt.sign(claims, this.refreshSecret, { expiresIn: '720h' });
+			const expires_in = Math.floor(Date.now() / 1000) + 3600;
 
 			return {
-				accessToken,
-				expiresIn,
-				refreshToken,
+				access_token,
+				expires_in,
+				refresh_token,
 			};
 		} catch (error) {
 			if (error instanceof ValidationError) {

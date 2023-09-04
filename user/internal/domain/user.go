@@ -37,6 +37,17 @@ type UserDTO struct {
 	Picture   string   `json:"picture" bson:"picture" validate:"http_url"`
 }
 
+type JWTTokens struct {
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type LoginDTO struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
 func NewUser(id, firstName, lastName, email, picture, password string, currency Currency) (*User, error) {
 	if !IsValidCurrency(currency) {
 		return &User{}, errors.New("invalid currency")

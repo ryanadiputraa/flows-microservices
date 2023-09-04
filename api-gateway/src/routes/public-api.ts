@@ -12,6 +12,7 @@ class PublicRouter {
 		const userService = new UserSerive(logger);
 
 		this.router.post('/auth/register', userService.register);
+		this.router.post('/auth/login', userService.login);
 	}
 }
 

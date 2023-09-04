@@ -6,24 +6,33 @@ import (
 
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/domain"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/user"
+	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/jwt"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/response"
 )
 
 type controller struct {
-	handler *http.ServeMux
-	service user.Usecase
+	handler    *http.ServeMux
+	service    user.Usecase
+	jwtService jwt.JWTService
 }
 
-func NewController(handler *http.ServeMux, service user.Usecase) {
+func NewController(handler *http.ServeMux, service user.Usecase, jwtService jwt.JWTService) {
 	c := &controller{
-		handler: handler,
-		service: service,
+		handler:    handler,
+		service:    service,
+		jwtService: jwtService,
 	}
 
 	handler.HandleFunc("/auth/register", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			c.Register(w, r)
+		}
+	})
+	handler.HandleFunc("/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			c.Login(w, r)
 		}
 	})
 }
@@ -48,5 +57,34 @@ func (c *controller) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.WriteSuccessResponse(w, r, http.StatusOK, "user successfully register", &data)
+	return
+}
+
+func (c *controller) Login(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var dto domain.LoginDTO
+	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
+		response.WriteErrorResponse(w, r, http.StatusBadRequest, "empty request body", response.INVALID_PARAMS, nil)
+		return
+	}
+
+	user, err := c.service.Login(ctx, &dto)
+	if err != nil {
+		if rErr, ok := err.(*domain.ResponseError); ok {
+			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
+			return
+		} else {
+			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", response.INTERNAL_SERVER_ERROR, nil)
+			return
+		}
+	}
+
+	tokens, err := c.jwtService.GenerateJWTTokens(ctx, user.ID)
+	if err != nil {
+		response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", response.INTERNAL_SERVER_ERROR, nil)
+		return
+	}
+
+	response.WriteSuccessResponse(w, r, http.StatusOK, "jwt tokens generated", &tokens)
 	return
 }
