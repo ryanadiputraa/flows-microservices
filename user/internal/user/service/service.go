@@ -120,6 +120,15 @@ func (s *service) Login(ctx context.Context, dto *domain.LoginDTO) (*domain.User
 func (s *service) GetUserInfo(ctx context.Context, userID string) (*domain.User, error) {
 	user, err := s.repository.FindByID(ctx, userID)
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			s.log.Warn("user info: ", err)
+			return nil, &domain.ResponseError{
+				Message: "missing user data",
+				Code:    http.StatusBadRequest,
+				ErrCode: response.INVALID_PARAMS,
+				Errors:  nil,
+			}
+		}
 		s.log.Error("user info: ", err)
 		return nil, err
 	}

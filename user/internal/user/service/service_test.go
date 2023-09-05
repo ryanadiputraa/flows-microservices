@@ -31,7 +31,7 @@ func TestRegister(t *testing.T) {
 		Password:  gofakeit.Password(true, true, true, true, false, 20),
 		FirstName: gofakeit.FirstName(),
 		LastName:  gofakeit.LastName(),
-		Currency:  "IDR",
+		Currency:  domain.IDR,
 		Picture:   gofakeit.ImageURL(80, 80),
 	}
 	invalidDTO := &domain.UserDTO{
@@ -39,7 +39,7 @@ func TestRegister(t *testing.T) {
 		Password:  "",
 		FirstName: "",
 		LastName:  "",
-		Currency:  "IDR",
+		Currency:  domain.IDR,
 		Picture:   "picture",
 	}
 	invalidDTOCurrency := &domain.UserDTO{
@@ -253,6 +253,76 @@ func TestLogin(t *testing.T) {
 
 			assert.Empty(t, err)
 			assert.Equal(t, c.expected, d)
+		})
+	}
+}
+
+func TestGetUserInfo(t *testing.T) {
+	user, _ := domain.NewUser(
+		gofakeit.UUID(), gofakeit.FirstName(), gofakeit.LastName(), gofakeit.Email(),
+		gofakeit.ImageURL(80, 80), gofakeit.Password(true, true, true, true, false, 20), domain.IDR,
+	)
+
+	cases := []struct {
+		name     string
+		id       string
+		expected *domain.User
+		err      error
+		mockRepo func(mockRepo *mocks.Repository)
+	}{
+		{
+			name:     "should return user info by given user id",
+			id:       user.ID,
+			expected: user,
+			err:      nil,
+			mockRepo: func(mockRepo *mocks.Repository) {
+				mockRepo.On("FindByID", mock.Anything, user.ID).Return(user, nil)
+			},
+		},
+		{
+			name:     "should return err when user with given id didn't exist",
+			id:       "rand id",
+			expected: nil,
+			err: &domain.ResponseError{
+				Message: "missing user data",
+				Code:    http.StatusBadRequest,
+				ErrCode: response.INVALID_PARAMS,
+				Errors:  nil,
+			},
+			mockRepo: func(mockRepo *mocks.Repository) {
+				mockRepo.On("FindByID", mock.Anything, "rand id").Return(nil, mongo.ErrNoDocuments)
+			},
+		},
+		{
+			name:     "should return err when repository fail to fetch user",
+			id:       user.ID,
+			expected: nil,
+			err:      mongo.ErrClientDisconnected,
+			mockRepo: func(mockRepo *mocks.Repository) {
+				mockRepo.On("FindByID", mock.Anything, user.ID).Return(nil, mongo.ErrClientDisconnected)
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			r := new(mocks.Repository)
+			c.mockRepo(r)
+			s := NewService(testConfig, testValidator, testLog, r)
+
+			d, err := s.GetUserInfo(context.TODO(), c.id)
+			if err != nil {
+				assert.Empty(t, d)
+				assert.Equal(t, c.err, err)
+				return
+			}
+
+			assert.Equal(t, c.expected.ID, d.ID)
+			assert.Equal(t, c.expected.Email, d.Email)
+			assert.Equal(t, c.expected.FirstName, d.FirstName)
+			assert.Equal(t, c.expected.LastName, d.LastName)
+			assert.Equal(t, c.expected.Picture, d.Picture)
+			assert.Equal(t, c.expected.Currency, d.Currency)
 		})
 	}
 }
