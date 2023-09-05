@@ -39,7 +39,6 @@ func (l *logger) Warn(v ...any) {
 
 func (l *logger) Error(v ...any) {
 	l.log.Error(v...)
-	l.log.Fatal()
 }
 
 func (l *logger) Fatal(v ...any) {
