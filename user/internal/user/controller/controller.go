@@ -35,6 +35,12 @@ func NewController(handler *http.ServeMux, service user.Usecase, jwtService jwt.
 			c.Login(w, r)
 		}
 	})
+	handler.HandleFunc("/api/users", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			c.GetUserInfo(w, r)
+		}
+	})
 }
 
 func (c *controller) Register(w http.ResponseWriter, r *http.Request) {
@@ -87,4 +93,43 @@ func (c *controller) Login(w http.ResponseWriter, r *http.Request) {
 
 	response.WriteSuccessResponse(w, r, http.StatusOK, "jwt tokens generated", &tokens)
 	return
+}
+
+func (c *controller) GetUserInfo(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	token, err := c.jwtService.ExtractJWTTokenHeader(r.Header)
+	if err != nil {
+		if rErr, ok := err.(*domain.ResponseError); ok {
+			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
+			return
+		} else {
+			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", response.INTERNAL_SERVER_ERROR, nil)
+			return
+		}
+	}
+
+	claims, err := c.jwtService.ParseJWTClaims(ctx, token)
+	if err != nil {
+		if rErr, ok := err.(*domain.ResponseError); ok {
+			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
+			return
+		} else {
+			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", response.INTERNAL_SERVER_ERROR, nil)
+			return
+		}
+	}
+
+	user, err := c.service.GetUserInfo(ctx, claims.UserID)
+	if err != nil {
+		if rErr, ok := err.(*domain.ResponseError); ok {
+			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
+			return
+		} else {
+			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", response.INTERNAL_SERVER_ERROR, nil)
+			return
+		}
+	}
+
+	response.WriteSuccessResponse(w, r, http.StatusOK, "fetch user info", user)
 }
