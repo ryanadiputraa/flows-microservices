@@ -1,8 +1,7 @@
-export const register = {
+export const login = {
 	post: {
 		tags: ['User Service'],
-		description: 'register new user by email',
-		operationId: 'registerUser',
+		description: 'login by email',
 		requestBody: {
 			required: true,
 			content: {
@@ -18,32 +17,14 @@ export const register = {
 								type: 'string',
 								example: 'secretpassword',
 							},
-							first_name: {
-								type: 'string',
-								example: 'john',
-							},
-							last_name: {
-								type: 'string',
-								example: 'doe',
-							},
-							currency: {
-								type: 'string',
-								example: 'USD',
-								description: 'must be a valid suppoerted currency',
-							},
-							picture: {
-								type: 'string',
-								example: 'https://domain.com/img.png',
-							},
 						},
 					},
 				},
 			},
 		},
-
 		responses: {
-			201: {
-				description: 'User successfully regiter',
+			200: {
+				description: 'User successfully sign in',
 				content: {
 					'application/json': {
 						schema: {
@@ -51,7 +32,7 @@ export const register = {
 							properties: {
 								message: {
 									type: 'string',
-									example: 'user successfully register',
+									example: 'user successfully sign in',
 								},
 								err_code: {
 									type: 'string',
@@ -64,26 +45,19 @@ export const register = {
 								data: {
 									type: 'object',
 									properties: {
-										email: {
+										access_token: {
 											type: 'string',
-											example: 'johndoe@mail.com',
+											example:
+												'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjFmZmJjYzQtNDRlNS00NjU1LTkwNmEtOTk2MWQ0Nzk2YWU0IiwiaWF0IjoxNjk0MDAzOTU3LCJleHAiOjE2OTQwMDc1NTd9.ykNPkSk54Uo0YcSma3psSMtbVH80P51qbkYqhsJCtlk',
 										},
-										first_name: {
-											type: 'string',
-											example: 'john',
+										expires_in: {
+											type: 'number',
+											example: 1694007557,
 										},
-										last_name: {
+										refresh_token: {
 											type: 'string',
-											example: 'doe',
-										},
-										currency: {
-											type: 'string',
-											example: 'USD',
-											description: 'must be a valid suppoerted currency',
-										},
-										picture: {
-											type: 'string',
-											example: 'https://domain.com/img.png',
+											example:
+												'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjFmZmJjYzQtNDRlNS00NjU1LTkwNmEtOTk2MWQ0Nzk2YWU0IiwiaWF0IjoxNjk0MDAzOTU3LCJleHAiOjE2OTY1OTU5NTd9.wDrohN_LaO_jx2cu0ccLUWV_tPKLTwmTo5RDDoLfF9A',
 										},
 									},
 								},
@@ -101,7 +75,7 @@ export const register = {
 							properties: {
 								message: {
 									type: 'string',
-									example: 'fail to register user',
+									example: 'fail to sign in user',
 								},
 								err_code: {
 									type: 'string',
@@ -110,17 +84,9 @@ export const register = {
 								errors: {
 									type: 'object',
 									properties: {
-										email: {
-											type: 'Array',
-											example: ['email is requiured', 'email must be a valid email address'],
-										},
 										password: {
 											type: 'Array',
-											example: ['password must at least 8 characters'],
-										},
-										picture: {
-											type: 'Array',
-											example: ['picture must be a valid url'],
+											example: ["password didn' match"],
 										},
 									},
 								},

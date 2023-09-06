@@ -17,9 +17,9 @@ class AuthService {
 			const tokens = req.headers['authorization'];
 			const [bearer, refresh_token] = tokens?.split(' ') ?? '';
 			if (!bearer || bearer !== 'Bearer' || !refresh_token)
-				return res.status(403).json({
+				return res.status(401).json({
 					message: 'missing authorization header',
-					err_code: 'forbidden',
+					err_code: 'unauthenticated',
 					errors: null,
 					data: null,
 				});

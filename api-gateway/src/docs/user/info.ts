@@ -1,49 +1,23 @@
-export const register = {
-	post: {
+export const users = {
+	get: {
 		tags: ['User Service'],
-		description: 'register new user by email',
-		operationId: 'registerUser',
-		requestBody: {
-			required: true,
-			content: {
-				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							email: {
-								type: 'string',
-								example: 'johndoe@mail.com',
-							},
-							password: {
-								type: 'string',
-								example: 'secretpassword',
-							},
-							first_name: {
-								type: 'string',
-								example: 'john',
-							},
-							last_name: {
-								type: 'string',
-								example: 'doe',
-							},
-							currency: {
-								type: 'string',
-								example: 'USD',
-								description: 'must be a valid suppoerted currency',
-							},
-							picture: {
-								type: 'string',
-								example: 'https://domain.com/img.png',
-							},
-						},
-					},
+		description: 'get user info',
+		parameters: [
+			{
+				name: 'Authorization',
+				in: 'header',
+				description: 'jwt auth token',
+				required: true,
+				schema: {
+					type: 'string',
+					example:
+						'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjFmZmJjYzQtNDRlNS00NjU1LTkwNmEtOTk2MWQ0Nzk2YWU0IiwiaWF0IjoxNjk0MDAzOTU3LCJleHAiOjE2OTQwMDc1NTd9.ykNPkSk54Uo0YcSma3psSMtbVH80P51qbkYqhsJCtlk',
 				},
 			},
-		},
-
+		],
 		responses: {
-			201: {
-				description: 'User successfully regiter',
+			200: {
+				description: 'Fetch user info',
 				content: {
 					'application/json': {
 						schema: {
@@ -51,7 +25,7 @@ export const register = {
 							properties: {
 								message: {
 									type: 'string',
-									example: 'user successfully register',
+									example: 'fetch user info',
 								},
 								err_code: {
 									type: 'string',
@@ -64,6 +38,10 @@ export const register = {
 								data: {
 									type: 'object',
 									properties: {
+										id: {
+											type: 'string',
+											example: '61ffbcc4-44e5-4655-906a-9961d4796ae4',
+										},
 										email: {
 											type: 'string',
 											example: 'johndoe@mail.com',
@@ -92,7 +70,7 @@ export const register = {
 					},
 				},
 			},
-			400: {
+			401: {
 				description: 'Invalid params',
 				content: {
 					'application/json': {
@@ -101,28 +79,15 @@ export const register = {
 							properties: {
 								message: {
 									type: 'string',
-									example: 'fail to register user',
+									example: 'missing auth header',
 								},
 								err_code: {
 									type: 'string',
-									example: 'invalid_params',
+									example: 'unauthenticated',
 								},
 								errors: {
 									type: 'object',
-									properties: {
-										email: {
-											type: 'Array',
-											example: ['email is requiured', 'email must be a valid email address'],
-										},
-										password: {
-											type: 'Array',
-											example: ['password must at least 8 characters'],
-										},
-										picture: {
-											type: 'Array',
-											example: ['picture must be a valid url'],
-										},
-									},
+									example: null,
 								},
 								data: {
 									type: 'object',
