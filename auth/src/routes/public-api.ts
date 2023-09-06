@@ -15,7 +15,8 @@ class PublicRouter {
 		const jwtController = new JwtController(jwtService);
 
 		this.router.post('/api/tokens', jwtController.generateJWTTokens);
-		this.router.get('/api/claims', jwtController.ParseJWTClaims);
+		this.router.get('/api/claims', jwtController.parseJWTClaims);
+		this.router.post('/api/refresh', jwtController.refreshJWTTokens);
 	}
 }
 

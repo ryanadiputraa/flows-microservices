@@ -7,3 +7,7 @@ export interface JWTTokens {
 export interface JWTClaimsDTO {
 	user_id: string;
 }
+
+export interface RefreshTokensDTO {
+	refresh_token: string;
+}

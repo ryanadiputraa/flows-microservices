@@ -41,9 +41,9 @@ class JWTService {
 		}
 	};
 
-	ParseJWTClaims = async (token: string): Promise<JWTClaimsDTO> => {
+	parseJWTClaims = async (token: string, isRefresh: boolean = false): Promise<JWTClaimsDTO> => {
 		try {
-			const decoded = jwt.verify(token, this.secret);
+			const decoded = jwt.verify(token, isRefresh ? this.refreshSecret : this.secret);
 			const user_id = decoded['user_id'] ?? '';
 			if (!user_id) this.log.warn('empty user id on jwt claims: ' + decoded);
 			return {
