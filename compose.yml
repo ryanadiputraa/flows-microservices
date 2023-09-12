@@ -37,6 +37,14 @@ services:
     networks:
       - app-network
 
+  notification:
+    container_name: flows-notification
+    build: ./notification
+    ports:
+      - 8083:80
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
