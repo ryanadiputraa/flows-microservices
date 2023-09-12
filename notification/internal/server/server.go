@@ -26,6 +26,8 @@ func NewServer(config *config.Config, logger logger.Logger) *Server {
 }
 
 func (s *Server) Run() error {
+	s.mapHandler()
+
 	server := &http.Server{
 		Addr:         s.Config.Server.Port,
 		Handler:      s.Handler,

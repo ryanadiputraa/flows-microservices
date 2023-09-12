@@ -3,17 +3,8 @@ package response
 import (
 	"encoding/json"
 	"net/http"
-)
 
-type ERR_CODE string
-
-const (
-	INVALID_PARAMS        = "invalid_params"
-	UNAUTHENTICATED       = "unauthenticated"
-	FORBIDDEN             = "forbidden"
-	NOT_FOUND             = "not_found"
-	INTERNAL_SERVER_ERROR = "internal_server_error"
-	BAD_GATEWAY           = "bad_gateway"
+	"github.com/ryanadiputraa/flows/flows-microservices/notification/internal/domain"
 )
 
 type HttpResponsePayload[T any] struct {
@@ -36,11 +27,11 @@ func WriteSuccessResponse(w http.ResponseWriter, r *http.Request, code int, msg 
 	json.NewEncoder(w).Encode(&payload)
 }
 
-func WriteErrorResponse(w http.ResponseWriter, r *http.Request, code int, msg string, errCode ERR_CODE, errors any) {
+func WriteErrorResponse(w http.ResponseWriter, r *http.Request, code int, msg string, errCode domain.ERR_CODE, errors any) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
 
-	payload := HttpResponsePayload[ERR_CODE]{
+	payload := HttpResponsePayload[domain.ERR_CODE]{
 		Message: msg,
 		ErrCode: errCode,
 		Erros:   errors,
