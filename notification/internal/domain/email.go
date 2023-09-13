@@ -14,8 +14,7 @@ const (
 
 var (
 	mailContents = map[string]string{
-		string(Register): `Hi %v, thank you for register on Flows!\n
-											Flows is an open source finance tracking application, feel free to contribute.`,
+		string(Register): "Hi %v, thank you for register on Flows!\nFlows is an open source finance tracking application, feel free to contribute.",
 	}
 
 	htmlContents = map[string]string{

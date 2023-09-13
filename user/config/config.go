@@ -8,7 +8,8 @@ type Config struct {
 }
 
 type Server struct {
-	Port string
+	Port                 string
+	Notification_Service string
 }
 type DB struct {
 	DB_Name string

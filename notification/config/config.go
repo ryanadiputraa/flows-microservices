@@ -4,10 +4,16 @@ import "github.com/spf13/viper"
 
 type Config struct {
 	Server *Server
+	Mail   *Mail
 }
 
 type Server struct {
 	Port string
+}
+
+type Mail struct {
+	Sender string
+	Pass   string
 }
 
 func LoadConfig(configPath string) (*Config, error) {

@@ -1,2 +1,6 @@
 server:
   port: :80
+
+mail:
+  sender: ryannadiputraa@gmail.com
+  pass: <gmail_auth>
