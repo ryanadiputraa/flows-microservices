@@ -7,20 +7,26 @@ import (
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/domain"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/user"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/jwt"
+	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/logger"
+	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/notification"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/response"
 )
 
 type controller struct {
-	handler    *http.ServeMux
-	service    user.Usecase
-	jwtService jwt.JWTService
+	handler             *http.ServeMux
+	log                 logger.Logger
+	service             user.Usecase
+	jwtService          jwt.JWTService
+	notificationService notification.NotificationService
 }
 
-func NewController(handler *http.ServeMux, service user.Usecase, jwtService jwt.JWTService) {
+func NewController(handler *http.ServeMux, log logger.Logger, service user.Usecase, jwtService jwt.JWTService, notificationService notification.NotificationService) {
 	c := &controller{
-		handler:    handler,
-		service:    service,
-		jwtService: jwtService,
+		handler:             handler,
+		log:                 log,
+		service:             service,
+		jwtService:          jwtService,
+		notificationService: notificationService,
 	}
 
 	handler.HandleFunc("/auth/register", func(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +67,19 @@ func (c *controller) Register(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	go func() {
+		resp, err := c.notificationService.SendMail(notification.MailPayload{
+			Subject:   "Welcome to Flows",
+			To:        data.Email,
+			FirstName: data.FirstName,
+			MailType:  "register",
+		})
+		c.log.Info("notification service: ", resp)
+		if err != nil {
+			c.log.Error("notification service: ", err)
+		}
+	}()
 
 	response.WriteSuccessResponse(w, r, http.StatusOK, "user successfully register", &data)
 	return

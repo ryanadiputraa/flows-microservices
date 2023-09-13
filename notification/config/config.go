@@ -4,16 +4,16 @@ import "github.com/spf13/viper"
 
 type Config struct {
 	Server *Server
-	DB     *DB
+	Mail   *Mail
 }
 
 type Server struct {
-	Port                 string
-	Notification_Service string
+	Port string
 }
-type DB struct {
-	DB_Name string
-	DSN     string
+
+type Mail struct {
+	Sender string
+	Pass   string
 }
 
 func LoadConfig(configPath string) (*Config, error) {

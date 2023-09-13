@@ -1,13 +1,12 @@
-# Flows Microservice - User Service
+# FLows Microservice - Notification Service
 
-User Service for Flows Microservice
+Notification Service for Flows Microservice
 
 ---
 
 ## Tech Stacks
 
 - Go
-- MongoDB
 
 ---
 
