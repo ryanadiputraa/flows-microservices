@@ -14,7 +14,10 @@ func (s *Server) MapHandlers() {
 	validator := validator.NewValidator()
 
 	jwtService := jwt.NewService(s.Logger)
-	notificationService := notification.NewNotificationService(*s.Config)
+	notificationService, err := notification.NewNotificationService(*s.Config)
+	if err != nil {
+		s.Logger.Fatal(err)
+	}
 
 	userRepository := repository.NewRepository(s.DB, s.Config.DB.DB_Name)
 	userService := service.NewService(*s.Config, validator, s.Logger, userRepository)

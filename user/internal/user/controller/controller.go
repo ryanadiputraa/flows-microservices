@@ -69,13 +69,12 @@ func (c *controller) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go func() {
-		resp, err := c.notificationService.SendMail(notification.MailPayload{
+		err := c.notificationService.SendMail(notification.MailPayload{
 			Subject:   "Welcome to Flows",
 			To:        data.Email,
 			FirstName: data.FirstName,
 			MailType:  "register",
 		})
-		c.log.Info("notification service: ", resp)
 		if err != nil {
 			c.log.Error("notification service: ", err)
 		}
