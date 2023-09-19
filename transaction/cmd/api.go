@@ -14,7 +14,8 @@ func main() {
 		l.Fatal(err)
 	}
 
-	s := server.NewServer(c, l)
+	// TODO : create db connection
+	s := server.NewServer(c, l, nil)
 
 	if err := s.Run(); err != nil {
 		l.Fatal(err)

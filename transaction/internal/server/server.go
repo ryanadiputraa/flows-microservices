@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/config"
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/pkg/logger"
 )
@@ -15,9 +16,10 @@ type Server struct {
 	Config  *config.Config
 	Handler *http.ServeMux
 	Logger  logger.Logger
+	DB      *sqlx.DB
 }
 
-func NewServer(config *config.Config, logger logger.Logger) *Server {
+func NewServer(config *config.Config, logger logger.Logger, DB *sqlx.DB) *Server {
 	return &Server{
 		Config:  config,
 		Handler: http.NewServeMux(),
