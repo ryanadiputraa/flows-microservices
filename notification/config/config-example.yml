@@ -1,5 +1,6 @@
 server:
   port: :80
+  message_broker_service: amqp://guest:guest@message_broker:5672
 
 mail:
   sender: ryannadiputraa@gmail.com

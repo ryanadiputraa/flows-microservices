@@ -8,7 +8,8 @@ type Config struct {
 }
 
 type Server struct {
-	Port string
+	Port                   string
+	Message_Broker_Service string
 }
 
 type Mail struct {
