@@ -38,11 +38,35 @@ services:
     networks:
       - app-network
 
+  transaction:
+    container_name: flows-transaction
+    build: ./transaction
+    ports:
+      - 8083:80
+    depends_on:
+      - transaction_db
+    networks:
+      - app-network
+
+  transaction_db:
+    container_name: flows-transaction_db
+    image: postgres:15.4-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=flows_transactions
+    ports:
+      - 5432:5432
+    volumes:
+      - transaction_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
   notification:
     container_name: flows-notification
     build: ./notification
     ports:
-      - 8083:80
+      - 8084:80
     networks:
       - app-network
 
@@ -61,4 +85,6 @@ networks:
 
 volumes:
   user_db_data:
+    driver: local
+  transaction_db_data:
     driver: local

@@ -1,0 +1,6 @@
+server:
+  port: :80
+
+db:
+  driver: postgres
+  dsn: postgresql://postgres:postgres@transaction_db:5432/flows_transactions?sslmode=disable
