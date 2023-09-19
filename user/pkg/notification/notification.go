@@ -1,14 +1,11 @@
 package notification
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
-	"net/http"
+	"time"
 
 	"github.com/ryanadiputraa/flows/flows-microservices/user/config"
-	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/response"
-	"github.com/sirupsen/logrus"
+	"github.com/streadway/amqp"
 )
 
 type MailPayload struct {
@@ -19,39 +16,65 @@ type MailPayload struct {
 }
 
 type NotificationService struct {
-	baseURL string
+	broker *amqp.Channel
 }
 
-func NewNotificationService(config config.Config) *NotificationService {
-	return &NotificationService{
-		baseURL: config.Server.Notification_Service,
+func NewNotificationService(config config.Config) (*NotificationService, error) {
+	retryInterval := 5 * time.Second
+	maxRetries := 10
+	var err error
+	var broker *amqp.Connection
+
+	for i := 0; i < maxRetries; i++ {
+		broker, err = amqp.Dial(config.Server.Message_Broker_Service)
+		if err == nil {
+			break
+		}
+		time.Sleep(retryInterval)
 	}
+
+	if broker == nil {
+		return nil, amqp.ErrClosed
+	}
+
+	ch, err := broker.Channel()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = ch.QueueDeclare(
+		"NotificationService", // queue name
+		true,                  // durable
+		false,                 // auto delete
+		false,                 // exclusive
+		false,                 // no wait
+		nil,                   // arguments
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &NotificationService{
+		broker: ch,
+	}, nil
 }
 
-func (s *NotificationService) SendMail(dto MailPayload) (*response.HttpResponsePayload[any], error) {
+func (s *NotificationService) SendMail(dto MailPayload) error {
 	body, err := json.Marshal(dto)
 	if err != nil {
-		return &response.HttpResponsePayload[any]{}, err
+		return err
 	}
 
-	url := s.baseURL + "/api/register"
-	logrus.Info(url)
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		return &response.HttpResponsePayload[any]{}, err
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return &response.HttpResponsePayload[any]{}, err
+	message := amqp.Publishing{
+		ContentType: "application/json",
+		Body:        body,
 	}
 
-	var data response.HttpResponsePayload[any]
-	if err = json.Unmarshal(respBody, &data); err != nil {
-		return &response.HttpResponsePayload[any]{}, err
-	}
-
-	return &data, err
+	return s.broker.Publish(
+		"",                    // exchange
+		"NotificationService", // queue name
+		false,                 // mandatory
+		false,                 // immediate
+		message,               // message to publish
+	)
 }

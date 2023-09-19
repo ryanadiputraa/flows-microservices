@@ -24,6 +24,7 @@ services:
       - 8082:80
     depends_on:
       - user_db
+      - message_broker
     networks:
       - app-network
 
@@ -42,6 +43,15 @@ services:
     build: ./notification
     ports:
       - 8083:80
+    networks:
+      - app-network
+
+  message_broker:
+    image: rabbitmq:3.12.4-management-alpine
+    container_name: flows-message_broker
+    ports:
+      - 5672:5672
+      - 15672:15672
     networks:
       - app-network
 
