@@ -2,6 +2,8 @@
 
 Backend microservices for Flows application
 
+![System Design](./docs/system-design.png)
+
 ---
 
 ## Tech Stacks
