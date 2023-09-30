@@ -24,6 +24,7 @@ func NewServer(config *config.Config, logger logger.Logger, DB *sqlx.DB) *Server
 		Config:  config,
 		Handler: http.NewServeMux(),
 		Logger:  logger,
+		DB:      DB,
 	}
 }
 
