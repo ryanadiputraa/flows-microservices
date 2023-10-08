@@ -18,9 +18,15 @@ func NewRepository(DB *sqlx.DB) transaction.Repository {
 }
 
 func (r *repository) Save(ctx context.Context, transaction *domain.Transaction) error {
-	return nil
+	q := `INSERT INTO transactions (id, user_id, title, description, amount, date, created_at, updated_at)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+
+	_, err := r.DB.ExecContext(ctx, q, transaction.ID, transaction.UserID, transaction.Title,
+		transaction.Description, transaction.Amount, transaction.Date, transaction.CreatedAt, transaction.UpdatedAt)
+
+	return err
 }
 
-func (r *repository) List(ctx context.Context, start, end time.Time, size, page int) ([]domain.Transaction, error) {
+func (r *repository) List(ctx context.Context, start, end time.Time, size, page int) ([]*domain.Transaction, error) {
 	return nil, nil
 }

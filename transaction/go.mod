@@ -16,6 +16,7 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-playground/validator/v10 v10.15.3
+	github.com/google/uuid v1.3.1
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.9

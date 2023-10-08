@@ -9,5 +9,5 @@ import (
 
 type Repository interface {
 	Save(ctx context.Context, transaction *domain.Transaction) error
-	List(ctx context.Context, start, end time.Time, size, page int) ([]domain.Transaction, error)
+	List(ctx context.Context, start, end time.Time, size, page int) ([]*domain.Transaction, error)
 }

@@ -1,9 +1,9 @@
 package validator
 
 import (
-	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -17,8 +17,11 @@ type validation struct {
 }
 
 func NewValidator() Validator {
+	v := validator.New()
+	_ = v.RegisterValidation("ISO8601date", isISO8601Date)
+
 	return &validation{
-		validator: validator.New(),
+		validator: v,
 	}
 }
 
@@ -33,7 +36,7 @@ func (v *validation) Validate(val any) (error, map[string][]string) {
 			errorsMap[field] = append(errorsMap[field], FieldErrMsg(fieldErr))
 
 		}
-		return errors.New("invalid params"), errorsMap
+		return err, errorsMap
 	}
 
 	return nil, nil
@@ -51,7 +54,14 @@ func FieldErrMsg(err validator.FieldError) string {
 		return fmt.Sprintf("%s should be a valid email address", strings.ToLower(err.Field()))
 	case "http_url":
 		return fmt.Sprintf("%s should be a valid http url", strings.ToLower(err.Field()))
+	case "ISO8601date":
+		return fmt.Sprintf("%s should be a valid ISO8601 date format", strings.ToLower(err.Field()))
 	default:
 		return err.Error()
 	}
+}
+
+func isISO8601Date(fl validator.FieldLevel) bool {
+	_, err := time.Parse(time.RFC3339Nano, fl.Field().String())
+	return err == nil
 }

@@ -20,8 +20,8 @@ type TransactionSummary struct {
 }
 
 type TransactionDTO struct {
-	Title       string    `json:"title" validate:"required,min=3,max=50"`
-	Description string    `json:"description"`
-	Amount      int       `json:"amount" validate:"required"`
-	Date        time.Time `json:"date" validate:"required"`
+	Title       string `json:"title" validate:"required,min=3,max=50"`
+	Description string `json:"description"`
+	Amount      int    `json:"amount" validate:"required,min=1"`
+	Date        string `json:"date" validate:"required,ISO8601date"`
 }
