@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"time"
 
@@ -29,7 +30,7 @@ func NewService(config config.Config, log logger.Logger, validator validator.Val
 	}
 }
 
-func (s *service) AddTransaction(ctx context.Context, userID string, dto *domain.TransactionDTO) (*domain.Transaction, error) {
+func (s *service) AddTransaction(ctx context.Context, userID string, dto domain.TransactionDTO) (*domain.Transaction, error) {
 	err, errors := s.validator.Validate(dto)
 	if err != nil {
 		s.log.Warn("add transaction: ", err)
@@ -53,7 +54,7 @@ func (s *service) AddTransaction(ctx context.Context, userID string, dto *domain
 		UpdatedAt:   time.Now().UTC(),
 	}
 
-	if err = s.repository.Save(ctx, &transaction); err != nil {
+	if err = s.repository.Save(ctx, transaction); err != nil {
 		s.log.Error("add transaction: ", err)
 		return nil, &domain.ResponseError{
 			Code:    http.StatusInternalServerError,
@@ -67,5 +68,35 @@ func (s *service) AddTransaction(ctx context.Context, userID string, dto *domain
 }
 
 func (s *service) GetTransactionSummary(ctx context.Context, UserID string) (*domain.TransactionSummary, error) {
-	return nil, nil
+	c := time.Now().UTC()
+	start := time.Date(c.Year(), c.Month(), 1, 0, 0, 0, 0, time.UTC)
+	end := time.Date(c.Year(), c.Month()+1, 1, 0, 0, 0, 0, time.UTC).Add(-time.Second)
+
+	transactions, err := s.repository.List(ctx, UserID, start, end, 5, 1)
+	if err != nil {
+		s.log.Error(err)
+		if err != sql.ErrNoRows {
+			return nil, &domain.ResponseError{
+				Code:    http.StatusInternalServerError,
+				Message: "transaction summary: fail to retrieve transactions",
+				ErrCode: domain.INTERNAL_SERVER_ERROR,
+				Errors:  nil,
+			}
+		}
+	}
+
+	summary := domain.TransactionSummary{
+		IncomeInMonth:     0,
+		ExpenseInMonth:    0,
+		LatestTransaction: transactions,
+	}
+	for _, t := range transactions {
+		if t.Amount > 0 {
+			summary.IncomeInMonth += t.Amount
+		} else {
+			summary.ExpenseInMonth += t.Amount
+		}
+	}
+
+	return &summary, nil
 }

@@ -7,6 +7,6 @@ import (
 )
 
 type Usecase interface {
-	AddTransaction(ctx context.Context, userID string, dto *domain.TransactionDTO) (*domain.Transaction, error)
+	AddTransaction(ctx context.Context, userID string, dto domain.TransactionDTO) (*domain.Transaction, error)
 	GetTransactionSummary(ctx context.Context, UserID string) (*domain.TransactionSummary, error)
 }

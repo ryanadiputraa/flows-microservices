@@ -23,6 +23,8 @@ func NewController(handler *http.ServeMux, service transaction.Usecase, jwtServi
 
 	handler.HandleFunc("/api/transactions", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
+		case http.MethodGet:
+			c.GetTransactionSummary(w, r)
 		case http.MethodPost:
 			c.AddTransaction(w, r)
 		}
@@ -60,7 +62,7 @@ func (c *controller) AddTransaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transaction, err := c.service.AddTransaction(ctx, claims.UserID, &transactionDTO)
+	transaction, err := c.service.AddTransaction(ctx, claims.UserID, transactionDTO)
 	if err != nil {
 		if rErr, ok := err.(*domain.ResponseError); ok {
 			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
@@ -72,4 +74,43 @@ func (c *controller) AddTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.WriteSuccessResponse(w, r, http.StatusCreated, "transaction added", transaction)
+}
+
+func (c *controller) GetTransactionSummary(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	token, err := c.jwtService.ExtractJWTTokenHeader(r.Header)
+	if err != nil {
+		if rErr, ok := err.(*domain.ResponseError); ok {
+			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
+			return
+		} else {
+			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", domain.INTERNAL_SERVER_ERROR, nil)
+			return
+		}
+	}
+
+	claims, err := c.jwtService.ParseJWTClaims(ctx, token)
+	if err != nil {
+		if rErr, ok := err.(*domain.ResponseError); ok {
+			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
+			return
+		} else {
+			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", domain.INTERNAL_SERVER_ERROR, nil)
+			return
+		}
+	}
+
+	transactions, err := c.service.GetTransactionSummary(ctx, claims.UserID)
+	if err != nil {
+		if rErr, ok := err.(*domain.ResponseError); ok {
+			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
+			return
+		} else {
+			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", domain.INTERNAL_SERVER_ERROR, nil)
+			return
+		}
+	}
+
+	response.WriteSuccessResponse(w, r, http.StatusCreated, "get transactions summary", transactions)
 }
