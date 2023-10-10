@@ -4,7 +4,6 @@ import (
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/internal/transaction/controller"
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/internal/transaction/repository"
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/internal/transaction/service"
-	"github.com/ryanadiputraa/flows/flows-microservices/transaction/pkg/jwt"
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/pkg/validator"
 )
 
@@ -12,6 +11,5 @@ func (s *Server) mapHandler() {
 	validator := validator.NewValidator()
 	repository := repository.NewRepository(s.DB)
 	service := service.NewService(*s.Config, s.Logger, validator, repository)
-	jwtService := jwt.NewService(s.Logger)
-	controller.NewController(s.Handler, service, jwtService)
+	controller.NewController(s.Handler, service)
 }

@@ -9,6 +9,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/config"
+	"github.com/ryanadiputraa/flows/flows-microservices/transaction/internal/middleware"
+	"github.com/ryanadiputraa/flows/flows-microservices/transaction/pkg/jwt"
 	"github.com/ryanadiputraa/flows/flows-microservices/transaction/pkg/logger"
 )
 
@@ -30,10 +32,12 @@ func NewServer(config *config.Config, logger logger.Logger, DB *sqlx.DB) *Server
 
 func (s *Server) Run() error {
 	s.mapHandler()
+	jwtService := jwt.NewService(s.Logger)
+	authMiddleware := middleware.NewAuthMiddleware(jwtService)
 
 	server := &http.Server{
 		Addr:         s.Config.Server.Port,
-		Handler:      s.Handler,
+		Handler:      authMiddleware.ClaimJWTToken(s.Handler.ServeHTTP),
 		ReadTimeout:  time.Second * 15,
 		WriteTimeout: time.Second * 15,
 	}
