@@ -2,9 +2,12 @@ name: user-test
 
 on:
   push:
-    branches: [user]
+    branches:
+      - master
+      - user
   pull_request:
-    branches: [master]
+    branches:
+      - master
 
 jobs:
   test:
