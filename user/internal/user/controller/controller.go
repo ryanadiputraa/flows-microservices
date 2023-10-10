@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/domain"
@@ -115,30 +116,9 @@ func (c *controller) Login(w http.ResponseWriter, r *http.Request) {
 
 func (c *controller) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	userID := fmt.Sprintf("%v", r.Context().Value("userID"))
 
-	token, err := c.jwtService.ExtractJWTTokenHeader(r.Header)
-	if err != nil {
-		if rErr, ok := err.(*domain.ResponseError); ok {
-			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
-			return
-		} else {
-			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", response.INTERNAL_SERVER_ERROR, nil)
-			return
-		}
-	}
-
-	claims, err := c.jwtService.ParseJWTClaims(ctx, token)
-	if err != nil {
-		if rErr, ok := err.(*domain.ResponseError); ok {
-			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
-			return
-		} else {
-			response.WriteErrorResponse(w, r, http.StatusInternalServerError, "internal server error", response.INTERNAL_SERVER_ERROR, nil)
-			return
-		}
-	}
-
-	user, err := c.service.GetUserInfo(ctx, claims.UserID)
+	user, err := c.service.GetUserInfo(ctx, userID)
 	if err != nil {
 		if rErr, ok := err.(*domain.ResponseError); ok {
 			response.WriteErrorResponse(w, r, rErr.Code, rErr.Message, rErr.ErrCode, rErr.Errors)
