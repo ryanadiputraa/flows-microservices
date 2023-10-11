@@ -14,7 +14,7 @@ class UserSerive {
 
 	register = async (req: Request, res: Response) => {
 		try {
-			const resp = await axios.post(`${this.baseURL}/auth/register`, { ...req.body });
+			const resp = await axios.post(this.baseURL + req.url, { ...req.body });
 			return res.status(resp.status).json(resp.data);
 		} catch (error) {
 			const { status, resp } = catchServiceErr(error);
@@ -29,7 +29,7 @@ class UserSerive {
 
 	login = async (req: Request, res: Response) => {
 		try {
-			const resp = await axios.post(`${this.baseURL}/auth/login`, { ...req.body });
+			const resp = await axios.post(this.baseURL + req.url, { ...req.body });
 			return res.status(resp.status).json(resp.data);
 		} catch (error) {
 			const { status, resp } = catchServiceErr(error);
@@ -44,7 +44,7 @@ class UserSerive {
 
 	userInfo = async (req: Request, res: Response) => {
 		try {
-			const resp = await axios.get(`${this.baseURL}/api/users`, {
+			const resp = await axios.get(this.baseURL + req.url, {
 				headers: {
 					Authorization: req.headers.authorization,
 				},

@@ -24,8 +24,9 @@ class PublicRouter {
 		this.router.get('/api/users', userService.userInfo);
 
 		// transaction
-		this.router.get('/api/transactions', transactionService.getTransactionSummary);
+		this.router.get('/api/transactions', transactionService.listTransactions);
 		this.router.post('/api/transactions', transactionService.addTransaction);
+		this.router.get('/api/transactions/summary', transactionService.getTransactionSummary);
 	}
 }
 
