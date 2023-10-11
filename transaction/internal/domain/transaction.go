@@ -11,6 +11,7 @@ type Transaction struct {
 	Date        time.Time `json:"date" db:"date"`
 	CreatedAt   time.Time `json:"-" db:"created_at"`
 	UpdatedAt   time.Time `json:"-" db:"updated_at"`
+	TotalData   int       `json:"-" db:"total_data"`
 }
 
 type TransactionSummary struct {

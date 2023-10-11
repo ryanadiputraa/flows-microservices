@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"math"
 	"net/http"
 	"time"
 
@@ -70,18 +71,13 @@ func (s *service) AddTransaction(ctx context.Context, userID string, dto domain.
 func (s *service) GetTransactionSummary(ctx context.Context, UserID string) (*domain.TransactionSummary, error) {
 	c := time.Now().UTC()
 	start := time.Date(c.Year(), c.Month(), 1, 0, 0, 0, 0, time.UTC)
-	end := time.Date(c.Year(), c.Month()+1, 1, 0, 0, 0, 0, time.UTC).Add(-time.Second)
+	end := time.Date(c.Year(), c.Month()+1, 1, 0, 0, 0, 0, time.UTC).Add(-time.Microsecond)
 
 	transactions, err := s.repository.List(ctx, UserID, start, end, 5, 1)
 	if err != nil {
 		s.log.Error(err)
 		if err != sql.ErrNoRows {
-			return nil, &domain.ResponseError{
-				Code:    http.StatusInternalServerError,
-				Message: "transaction summary: fail to retrieve transactions",
-				ErrCode: domain.INTERNAL_SERVER_ERROR,
-				Errors:  nil,
-			}
+			return nil, err
 		}
 	}
 
@@ -99,4 +95,66 @@ func (s *service) GetTransactionSummary(ctx context.Context, UserID string) (*do
 	}
 
 	return &summary, nil
+}
+
+func (s *service) ListTransactions(ctx context.Context, userID, start, end string, size, page int) ([]domain.Transaction, *domain.Meta, error) {
+	if start == "" {
+		yesterday := time.Now().UTC().Add(-(time.Hour * 24))
+		start = yesterday.Format(time.RFC3339Nano)
+	}
+	if end == "" {
+		now := time.Now().UTC()
+		end = now.Format(time.RFC3339Nano)
+	}
+	if size == 0 {
+		size = 1
+	}
+	if page == 0 {
+		page = 1
+	}
+
+	startDate, err := time.Parse(time.RFC3339Nano, start)
+	if err != nil {
+		s.log.Warn("invalid date format: ", start)
+		return nil, nil, &domain.ResponseError{
+			Code:    http.StatusBadRequest,
+			Message: "invalid 'start' param, expected ISO861 date string",
+			ErrCode: domain.INVALID_PARAMS,
+			Errors:  nil,
+		}
+	}
+	endDate, err := time.Parse(time.RFC3339Nano, end)
+	if err != nil {
+		s.log.Warn("invalid date format: ", end)
+		return nil, nil, &domain.ResponseError{
+			Code:    http.StatusBadRequest,
+			Message: "invalid 'end' param, expected ISO861 date string",
+			ErrCode: domain.INVALID_PARAMS,
+			Errors:  nil,
+		}
+	}
+
+	transactions, err := s.repository.List(ctx, userID, startDate, endDate, size, page)
+	if err != nil {
+		s.log.Error("fail to retrieve transactions: ", err)
+		if err != sql.sql.ErrNoRows {
+			return nil, nil, err
+		}
+	}
+
+	total := 0
+	totalPages := 0
+	if len(transactions) > 0 {
+		s.log.Info("hittt")
+		total = transactions[0].TotalData
+		totalPages = int(math.Ceil(float64(total) / float64(size)))
+	}
+
+	return transactions,
+		&domain.Meta{
+			Size:        size,
+			Total:       total,
+			TotalPages:  totalPages,
+			CurrentPage: page},
+		nil
 }

@@ -37,7 +37,7 @@ func (r *repository) List(ctx context.Context, userID string, start, end time.Ti
 	}
 
 	q = `
-		SELECT id, title, description, amount, date FROM transactions 
+		SELECT COUNT(id) OVER() as total_data, id, title, description, amount, date FROM transactions 
 		WHERE user_id = $1 AND date BETWEEN $4 AND $5
 		ORDER BY date DESC LIMIT $2 OFFSET $3
 	`
