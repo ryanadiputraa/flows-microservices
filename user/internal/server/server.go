@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/ryanadiputraa/flows/flows-microservices/user/config"
-	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/middleware"
-	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/jwt"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -32,12 +30,10 @@ func NewServer(config *config.Config, logger logger.Logger, db *mongo.Client) *S
 
 func (s *Server) Run() error {
 	s.MapHandlers()
-	jwt := jwt.NewService(s.Logger)
-	authMiddleware := middleware.NewAuthMiddleware(jwt)
 
 	server := &http.Server{
 		Addr:         s.Config.Server.Port,
-		Handler:      authMiddleware.ClaimJWTToken(s.Handler.ServeHTTP),
+		Handler:      s.Handler,
 		ReadTimeout:  time.Second * 15,
 		WriteTimeout: time.Second * 15,
 	}

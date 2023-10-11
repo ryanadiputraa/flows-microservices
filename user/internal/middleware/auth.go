@@ -8,15 +8,15 @@ import (
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/response"
 )
 
-type authMiddleware struct {
+type AuthMiddleware struct {
 	jwt jwt.JWTService
 }
 
-func NewAuthMiddleware(jwt jwt.JWTService) *authMiddleware {
-	return &authMiddleware{jwt: jwt}
+func NewAuthMiddleware(jwt jwt.JWTService) *AuthMiddleware {
+	return &AuthMiddleware{jwt: jwt}
 }
 
-func (m *authMiddleware) ClaimJWTToken(next http.HandlerFunc) http.HandlerFunc {
+func (m *AuthMiddleware) ClaimJWTToken(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := m.jwt.ExtractJWTTokenHeader(r.Header)
 		if err != nil {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/domain"
+	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/middleware"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/internal/user"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/jwt"
 	"github.com/ryanadiputraa/flows/flows-microservices/user/pkg/logger"
@@ -21,7 +22,9 @@ type controller struct {
 	notificationService notification.NotificationService
 }
 
-func NewController(handler *http.ServeMux, log logger.Logger, service user.Usecase, jwtService jwt.JWTService, notificationService notification.NotificationService) {
+func NewController(
+	handler *http.ServeMux, log logger.Logger, service user.Usecase, authMiddleware *middleware.AuthMiddleware,
+	jwtService jwt.JWTService, notificationService notification.NotificationService) {
 	c := &controller{
 		handler:             handler,
 		log:                 log,
@@ -45,7 +48,7 @@ func NewController(handler *http.ServeMux, log logger.Logger, service user.Useca
 	handler.HandleFunc("/api/users", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			c.GetUserInfo(w, r)
+			authMiddleware.ClaimJWTToken(c.GetUserInfo)(w, r)
 		}
 	})
 }
